@@ -38,7 +38,6 @@ def update_number(radiansx, radians_per_update):
     update = radiansx // radians_per_update
     return int(update)
 
-
 #Read the image from the file into an array (a list of lists).
 #The first list is the color values of the first row, the second list is the 2nd row, etc. Note 255 is white, 0 is black
 img = cv2.imread(bmp, 0)
