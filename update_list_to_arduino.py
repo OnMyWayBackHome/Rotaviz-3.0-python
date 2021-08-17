@@ -1,7 +1,8 @@
 from graphics import *
 from math import sin, cos, radians
 
-def update_list_to_longs (update_list, number_of_updates, number_of_leds):
+
+def update_list_to_longs(update_list, number_of_updates, number_of_leds):
     """
     Creates 4-byte integers with each bit being 1 if the corresponding LED is on and 0 if off
     :param update_list: a list of lists which have: update_number, led_number, 1/0 (which means on/off)
@@ -23,10 +24,19 @@ def update_list_to_longs (update_list, number_of_updates, number_of_leds):
         led_longs.append(led_long)
     return led_longs
 
-def sort_update_list(update_list):
-    return sorted(update_list, key=itemgetter(0,1))  # Sort the list first on the zeroth element of the sublists, and then by first element
 
-def led_longs_to_arduino(led_longs):
+def sort_update_list(update_list):
+    return sorted(update_list, key=itemgetter(0, 1))  # Sort the list first on the zeroth element of the sublists, and then by first element
+
+def reverse_bits(n):
+    """
+    :param n:
+    :return: n padded with leading zeros to 32 bits and then with the bits in reverse order
+    """
+    return int('{:08b}'.format(n)[::-1], 2)
+
+
+def led_longs_to_4_bytes_arduino(led_longs):
     """
     Creates a matrix (list of lists) that the Arduino sketch will use to turn on and off LEDs.
     The output will be formatted so you can copy and paste the matrix definition into the Arduino sketch.
@@ -47,13 +57,24 @@ def led_longs_to_arduino(led_longs):
     f.close()
     return
 
-def reverse_bits(n):
-        result = 0
-        for i in range(32):
-            result <<= 1
-            result |= n & 1
-            n >>= 1
-        return result
+def led_longs_to_arduino(led_longs):
+    """
+    Creates a list that the Arduino sketch will use to turn on and off LEDs.
+    The output will be formatted so you can copy and paste the array definition into the Arduino sketch.
+    :param led_longs: one long integer for each update
+    :return: outputs a file formatted as an Arduino list of longs (32bits-4 bytes). LSB is LED #32, the farthest LED from the center
+    """
+    f = open('rotaviz_images_as_longs.h', "w")
+
+    f.write('// Rotaviz image. Each integer is an update. MSB controls the LED that is closest to center. \n')
+    f.write('f[{}] = {{'.format(len(led_longs)))  # The name of the array and the opening curly brackets.
+    for i, led_long in enumerate(led_longs):
+        if i % 8 == 0 :
+            f.write('\n')
+        f.write(f'{reverse_bits(led_long)}, ')
+    f.write('}},\n')
+    f.close()
+    return
 
 
 def led_longs_to_fast_arduino(led_longs):
@@ -102,7 +123,7 @@ def visualize_image(led_longs, number_of_leds, number_of_updates):
     """
     pixels_per_led = 4
     img_size = (number_of_leds * 2 + 1) * pixels_per_led
-    win = GraphWin("rotaviz", img_size , img_size)
+    win = GraphWin("rotaviz", img_size, img_size)
     degrees_per_update = 360 // number_of_updates
     update_number = 0
     for led_long in led_longs:
@@ -114,7 +135,7 @@ def visualize_image(led_longs, number_of_leds, number_of_updates):
                     rad = - radians(degree + degrees_per_update * update_number)
                     x = cos(rad) * (i + 1) * pixels_per_led
                     y = sin(rad) * (i + 1) * pixels_per_led
-                    Point(x + img_size // 2, img_size // 2 - y ).draw(win)
+                    Point(x + img_size // 2, img_size // 2 - y).draw(win)
             #print(' ')
         update_number += 1
     win.getMouse()

@@ -38,7 +38,6 @@ def update_number(radiansx, radians_per_update):
     update = radiansx // radians_per_update
     return int(update)
 
-
 #Read the image from the file into an array (a list of lists).
 #The first list is the color values of the first row, the second list is the 2nd row, etc. Note 255 is white, 0 is black
 img = cv2.imread(bmp, 0)
@@ -103,7 +102,7 @@ for up in range(number_of_updates):
 #print(updates)
 led_longs = update_list_to_longs(updates, number_of_updates, number_of_leds)
 visualize_image(led_longs, number_of_leds, number_of_updates)
-led_longs_to_fast_arduino(led_longs)
+led_longs_to_arduino(led_longs)
 
 
 
